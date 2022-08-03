@@ -1,0 +1,10 @@
+build
+hardhat/artifacts
+hardhat/cache
+hardhat/node_modules
+
+
+heco-deploy-doc/node1/data/geth
+heco-deploy-doc/node1/data/history
+heco-deploy-doc/node2/data/geth
+heco-deploy-doc/node2/data/history
