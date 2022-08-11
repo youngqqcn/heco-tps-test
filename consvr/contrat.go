@@ -1,6 +1,7 @@
 package consvr
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -46,14 +47,21 @@ func (c *ContractSvc) Mint(batchCount int) (string, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	to := "0xf513e4e5Ded9B510780D016c482fC158209DE9AA"
-
-	privateKey, err := crypto.HexToECDSA("5ea30eea9ba9500f3601f7659f0ccace819c562456e2f745fb2555918ab32277")
+	// to := "0xf513e4e5Ded9B510780D016c482fC158209DE9AA"
+	// privateKey, err := crypto.HexToECDSA("5ea30eea9ba9500f3601f7659f0ccace819c562456e2f745fb2555918ab32277")
+	to := "0x8284B6412ef6eFA75adDEa85f07E7de5f8F8ec48"
+	privateKey, err := crypto.HexToECDSA("cfe945f87d61aa82e903804bcc32bacdf130ae47268a2f6d7a3d877cbf028ff6")
 	if err != nil {
 		return "", err
 	}
-	chainId := big.NewInt(46614)
+	chainId := big.NewInt(2285)
 	caller, err := c.ethSDK.ContractCaller(privateKey, chainId)
+
+	fromAddress := crypto.PubkeyToAddress(privateKey.PublicKey)
+	nonce_pending, err := c.ethSDK.Client.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		return "", err
+	}
 
 	if err != nil {
 		return "", err
@@ -66,7 +74,7 @@ func (c *ContractSvc) Mint(batchCount int) (string, error) {
 	}
 
 	txs := make([]string, 0)
-	nonce := int64(1)
+	nonce := int64(nonce_pending)
 
 	for i := 0; i < batchCount; i++ {
 		caller.Nonce = big.NewInt(nonce + int64(i))

@@ -24,6 +24,11 @@ type EthSDK struct {
 
 var defaultGasLimit = 21000
 
+var CHAIN_ID = big.NewInt(2285)
+
+// var CHAIN_ID = big.NewInt(1337)
+// var CHAIN_ID = big.NewInt(128)
+
 func NewEthSDK(url string) (*EthSDK, error) {
 	client, err := ethclient.Dial(url)
 	if err != nil {
@@ -59,12 +64,12 @@ func (e *EthSDK) Transfer(from *ecdsa.PrivateKey, to string, amount int64) (stri
 		nil,
 	)
 
-	chainId, err := e.client.NetworkID(context.Background())
-	if err != nil {
-		return "", err
-	}
+	// chainId, err := e.client.NetworkID(context.Background())
+	// if err != nil {
+	// 	return "", err
+	// }
 
-	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainId), from)
+	signedTx, err := types.SignTx(tx, types.NewEIP155Signer(CHAIN_ID), from)
 	if err != nil {
 		return "", err
 	}
@@ -90,12 +95,13 @@ func (e *EthSDK) BatchTransfer(from *ecdsa.PrivateKey, batchCount int, to string
 	if err != nil {
 		return txs, err
 	}
+
 	toAddress := common.HexToAddress(to)
 
-	chainId, err := e.client.NetworkID(context.Background())
-	if err != nil {
-		return txs, err
-	}
+	// chainId, err := e.client.NetworkID(context.Background())
+	// if err != nil {
+	// 	return txs, err
+	// }
 
 	for i := 0; i < batchCount; i++ {
 
@@ -108,7 +114,7 @@ func (e *EthSDK) BatchTransfer(from *ecdsa.PrivateKey, batchCount int, to string
 			nil,
 		)
 
-		signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainId), from)
+		signedTx, err := types.SignTx(tx, types.NewEIP155Signer(CHAIN_ID), from)
 		if err != nil {
 			return []string{}, err
 		}
@@ -131,17 +137,18 @@ func (e *EthSDK) BatchTransfer2(from *ecdsa.PrivateKey, batchCount int, tos []st
 	if err != nil {
 		return txs, err
 	}
-	value := big.NewInt(amount)
+	value := big.NewInt(0)
 	gasLimit := uint64(defaultGasLimit)
 	gasPrice, err := e.client.SuggestGasPrice(context.Background())
 	if err != nil {
 		return txs, err
 	}
+	gasPrice = big.NewInt(0)
 
-	chainId, err := e.client.NetworkID(context.Background())
-	if err != nil {
-		return txs, err
-	}
+	// chainId, err := e.client.NetworkID(context.Background())
+	// if err != nil {
+	// 	return txs, err
+	// }
 
 	for i := 0; i < batchCount; i++ {
 
@@ -156,10 +163,13 @@ func (e *EthSDK) BatchTransfer2(from *ecdsa.PrivateKey, batchCount int, tos []st
 			nil,
 		)
 
-		signedTx, err := types.SignTx(tx, types.NewEIP155Signer(chainId), from)
+		signedTx, err := types.SignTx(tx, types.NewEIP155Signer(CHAIN_ID), from)
 		if err != nil {
 			return []string{}, err
 		}
+		// stx, _ := signedTx.MarshalBinary()
+		// fmt.Printf("signedtx=====>%v\n", hexutil.Encode(stx))
+		// return []string{}, err
 
 		if err := e.client.SendTransaction(context.Background(), signedTx); err != nil {
 			return []string{}, err
@@ -167,6 +177,7 @@ func (e *EthSDK) BatchTransfer2(from *ecdsa.PrivateKey, batchCount int, tos []st
 		// fmt.Printf("%v\n", signedTx)
 		txs = append(txs, signedTx.Hash().Hex())
 	}
+	fmt.Printf("last tx : %s\n", txs[len(txs)-1])
 	return txs, nil
 }
 
@@ -191,20 +202,24 @@ func toWei(ether int64) int64 {
 func ethTps() {
 
 	// init eth sdk
-	sdk, err := NewEthSDK("http://192.168.110.95:8545")
-	// sdk, err := NewEthSDK("http://localhost:8545")
+	// sdk, err := NewEthSDK("http://192.168.110.95:8545")
+	sdk, err := NewEthSDK("http://localhost:8545")
+	// sdk, err := NewEthSDK("https://http-mainnet.hecochain.com/")
 	if err != nil {
 		fmt.Printf("Init sdk failed: %s", err)
 		return
 	}
 
-	privkey, err := crypto.HexToECDSA("5ea30eea9ba9500f3601f7659f0ccace819c562456e2f745fb2555918ab32277")
+	// sender is 0xf513e4e5Ded9B510780D016c482fC158209DE9AA
+	// privkey, err := crypto.HexToECDSA("5ea30eea9ba9500f3601f7659f0ccace819c562456e2f745fb2555918ab32277")
+	// sender is 0x8284B6412ef6eFA75adDEa85f07E7de5f8F8ec48
+	privkey, err := crypto.HexToECDSA("cfe945f87d61aa82e903804bcc32bacdf130ae47268a2f6d7a3d877cbf028ff6")
 	if err != nil {
 		fmt.Printf("priv kery error: %v\n", err)
 		return
 	}
 
-	subAddrs := getAdddress(100)
+	subAddrs := getAdddress(1)
 	tos := make([]string, 0)
 	for k := range subAddrs {
 		tos = append(tos, k)
@@ -217,6 +232,8 @@ func ethTps() {
 	}
 	fmt.Printf("BatchTransfer, ret: %d\n", len(txs))
 
+	return
+
 	time.Sleep(10 * time.Second)
 	// txhash, err := sdk.Transfer(privkey, "0x8284B6412ef6eFA75adDEa85f07E7de5f8F8ec48", 1000)
 	// if err != nil {
@@ -224,6 +241,8 @@ func ethTps() {
 	// 	return
 	// }
 	// fmt.Printf("tx is %s\n", txhash)
+
+	////////////////////////////////////////////////
 
 	wg := &sync.WaitGroup{}
 	wg.Add(len(subAddrs))
@@ -262,11 +281,11 @@ func nftTps() {
 	// 	return
 	// }
 
-	contractAddress := "0xd93B26b711115E413c0dF4847fd28467887F2a1a"
+	contractAddress := "0x8dc3b1010dcc7a1b9dbdbb4423445627e9de5919"
 	csvr := consvr.NewContractSvc(sdk, contractAddress)
 	csvr.Load()
 
-	h, err := csvr.Mint(10000)
+	h, err := csvr.Mint(100)
 	if err != nil {
 		fmt.Printf("mint error : %s\n", err)
 		return
@@ -276,7 +295,6 @@ func nftTps() {
 
 func main() {
 
-	nftTps()
+	ethTps()
+	// nftTps()
 }
-
-// NFT合约地址： 0xd93B26b711115E413c0dF4847fd28467887F2a1a

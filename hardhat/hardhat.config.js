@@ -20,10 +20,12 @@ module.exports = {
   solidity: "0.8.4",
   networks: {
     private: {
-      chainId: 46614,
+      // chainId: 2285.,
+      chainId: 1337.,
       url: "http://localhost:8545",
       accounts: [
-        "0x5ea30eea9ba9500f3601f7659f0ccace819c562456e2f745fb2555918ab32277",
+        "0xcfe945f87d61aa82e903804bcc32bacdf130ae47268a2f6d7a3d877cbf028ff6",// 0x8284B6412ef6eFA75adDEa85f07E7de5f8F8ec48
+        "0x5ea30eea9ba9500f3601f7659f0ccace819c562456e2f745fb2555918ab32277", // 0xf513e4e5Ded9B510780D016c482fC158209DE9AA
         "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
         "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
         "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a"
